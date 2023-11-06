@@ -1,0 +1,93 @@
+@page "/inventory"
+@using System.Runtime.CompilerServices;
+@inject IDownstreamApi downstreamAPI
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject TableServiceClient tableServiceClient
+
+<h1>Inventory</h1>
+
+<p>Enter description here.</p>
+
+@if (_rows is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>Inventory</h2>
+    <table>
+        <thead>
+            <tr>
+                @if (_rows.Count > 0)
+                {
+                    @foreach (var key in _rows[0].Keys)
+                    {
+                        <th>@key</th>
+                    }
+
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _rows)
+            {
+                <tr>
+                    @foreach (var key in row.Keys)
+                    {
+                        <td>@(row.TryGetValue(key, out var value) ? value : string.Empty)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="@(_rows.Count > 0 && (_rows[0]?.Keys.Count ?? 1) > 0 ? (_rows[0]?.Keys.Count ?? 1) : 1)">
+                    <InputText DisplayName="xyz" Value="@_xyz" />
+                    <button @onclick="InsertRowAsync">Add</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+@code {
+    private List<TableEntity>? _rows;
+    private const string _tableName = "inventory";
+    private string _xyz;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tableClient = tableServiceClient.GetTableClient(_tableName);
+            await tableClient.CreateIfNotExistsAsync();
+
+            _rows = await tableClient.QueryAsync<TableEntity>().ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+    }
+
+    private async Task InsertRowAsync()
+    {
+        try
+        {
+            var tableClient = tableServiceClient.GetTableClient(_tableName);
+            await tableClient.CreateIfNotExistsAsync();
+
+            var entity = new TableEntity("partition", Guid.NewGuid().ToString())
+            {
+                { "xyz", _xyz }
+            };
+
+            await tableClient.AddEntityAsync(entity);
+            _rows = await tableClient.QueryAsync<TableEntity>().ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+    }
+}
