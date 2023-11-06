@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "identityapp1": {
+      "type": "identityapp",
+      "connectionId": "AzureAD:ClientSecret",
+      "dynamicId": null
+    },
+    "secrets1": {
+      "type": "secrets",
+      "connectionId": "VaultUri"
+    },
+    "storage1": {
+      "type": "storage",
+      "connectionId": "AZURE_STORAGE_CONNECTIONSTRING",
+      "dynamicId": null
+    },
+    "appInsights1": {
+      "type": "appInsights",
+      "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+      "dynamicId": null
+    }
+  }
+}
